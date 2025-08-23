@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.stationery_seller.LoginController">
+
+    <top>
+    <MenuBar nodeOrientation="LEFT_TO_RIGHT">
+       <Menu mnemonicParsing="false" text="File">
+           <MenuItem mnemonicParsing="false" text="Close" />
+       </Menu>
+       <Menu mnemonicParsing="false" text="Edit">
+           <MenuItem mnemonicParsing="false" text="Delete" />
+           <MenuItem mnemonicParsing="false" text="Edit" />
+       </Menu>
+       <Menu mnemonicParsing="false" text="Help">
+           <MenuItem mnemonicParsing="false" text="About" />
+       </Menu>
+   </MenuBar>
+   </top>
+
+    <center>
+        <VBox alignment="CENTER" maxWidth="200" spacing="10">
+            <Label text="Вход в систему" textAlignment="CENTER" />
+            <TextField fx:id="usernameField" promptText="Логин" text="Harry13"/>
+            <PasswordField fx:id="passwordField" promptText="Пароль" text="1234"/>
+            <Button onAction="#onLogin" text="Войти" />
+            <Label fx:id="errorLabel" textFill="red" />
+        </VBox>
+    </center>
+</BorderPane>

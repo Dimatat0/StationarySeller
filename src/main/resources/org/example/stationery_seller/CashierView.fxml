@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.stationery_seller.CashierController">
+<top>
+<MenuBar nodeOrientation="LEFT_TO_RIGHT">
+    <Menu mnemonicParsing="false" text="File">
+        <MenuItem mnemonicParsing="false" text="Close" />
+    </Menu>
+    <Menu mnemonicParsing="false" text="Edit">
+        <MenuItem mnemonicParsing="false" text="Delete" />
+        <MenuItem mnemonicParsing="false" text="Edit" />
+    </Menu>
+    <Menu mnemonicParsing="false" text="Help">
+        <MenuItem mnemonicParsing="false" text="About" />
+    </Menu>
+</MenuBar>
+</top>
+
+
+<center>
+    <VBox alignment="BOTTOM_RIGHT" spacing="10">
+        <padding>
+            <Insets right="10" />
+        </padding>
+        <Label fx:id="totalPriceLabel" text="0 ₽"
+               style="-fx-font-size: 96px; -fx-font-weight: bold; -fx-font-family: 'Times New Roman';" />
+    </VBox>
+</center>
+
+
+
+    <right>
+        <VBox maxWidth="Infinity">
+            <Label alignment="TOP_CENTER" maxWidth="Infinity" text="Корзина">
+            <font>
+               <Font size="15.0" />
+            </font></Label>
+            <ScrollPane fitToHeight="true" maxHeight="500.0" prefHeight="500.0" hbarPolicy="NEVER" vbarPolicy="ALWAYS">
+                <VBox fx:id="shopingCart" prefWidth="300" spacing="2">
+                </VBox>
+                <padding>
+                    <Insets left="10" right="10" />
+                </padding>
+            </ScrollPane>
+            <HBox>
+                <Button onAction="#removeSelectedItems" alignment="CENTER" text="Удалить товары"/>
+                <Button onAction="#sellItems" alignment="CENTER" text="Оплата"/>
+            </HBox>
+        </VBox>
+    </right>
+
+
+    <bottom>
+        <VBox>
+            <HBox spacing="10">
+                <TextField fx:id="searchField" promptText="Поиск товаров"/>
+                <Button onAction="#searchItems" text="Найти"/>
+                <Button onAction="#loadItemsFromDB" text="Обновить"/>
+            </HBox>
+            <ScrollPane fitToWidth="true" maxHeight="200.0" prefHeight="200.0" hbarPolicy="NEVER" vbarPolicy="ALWAYS">
+                <TilePane fx:id="itemsList" tileAlignment="TOP_LEFT">
+                </TilePane>
+            </ScrollPane>
+        </VBox>
+    </bottom>
+</BorderPane>
