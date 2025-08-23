@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -28,7 +29,7 @@ public class LoginController {
 
         String username = usernameField.getText();
         String password = passwordField.getText(); // TODO: заменить на hash
-        ConnectionHelper.init("jdbc:postgresql://localhost:5432/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
+        ConnectionHelper.init("jdbc:postgresql://192.168.0.12:5432/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
         ConnectionHelper helper = ConnectionHelper.getInstance();
 
 
@@ -72,7 +73,15 @@ public class LoginController {
 
         }
         catch (SQLException e) {
-            log.log(Level.SEVERE, "Database connection error", e);
+            showAlert(Alert.AlertType.ERROR, "Ошибка подключения", e.getMessage());
         }
         }
+
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

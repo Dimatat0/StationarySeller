@@ -286,8 +286,8 @@ public class CashierController {
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (SQLException closeEx) {
-                    log.log(Level.SEVERE, "Error closing connection", closeEx);
+                } catch (SQLException ex) {
+                    log.log(Level.SEVERE, "Error closing connection", ex);
                 }
             }
         }
