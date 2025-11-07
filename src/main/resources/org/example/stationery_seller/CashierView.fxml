@@ -8,15 +8,15 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.stationery_seller.CashierController">
 <top>
 <MenuBar nodeOrientation="LEFT_TO_RIGHT">
-    <Menu mnemonicParsing="false" text="File">
-        <MenuItem mnemonicParsing="false" text="Close" />
+    <Menu mnemonicParsing="false" text="Файл">
+        <MenuItem mnemonicParsing="false" text="Закрыть" />
     </Menu>
-    <Menu mnemonicParsing="false" text="Edit">
-        <MenuItem mnemonicParsing="false" text="Delete" />
-        <MenuItem mnemonicParsing="false" text="Edit" />
+    <Menu mnemonicParsing="false" text="Редактировать">
+        <MenuItem mnemonicParsing="false" text="Удалить" />
+        <MenuItem mnemonicParsing="false" text="Редактировать" />
     </Menu>
-    <Menu mnemonicParsing="false" text="Help">
-        <MenuItem mnemonicParsing="false" text="About" />
+    <Menu mnemonicParsing="false" text="Помощь">
+        <MenuItem mnemonicParsing="false" text="О нас" />
     </Menu>
 </MenuBar>
 </top>
@@ -27,7 +27,7 @@
         <padding>
             <Insets right="10" />
         </padding>
-        <Label fx:id="totalPriceLabel" text="0 ₽"
+        <Label fx:id="totalPriceLabel" text="0,00 ₽"
                style="-fx-font-size: 96px; -fx-font-weight: bold; -fx-font-family: 'Times New Roman';" />
     </VBox>
 </center>
@@ -47,7 +47,7 @@
                     <Insets left="10" right="10" />
                 </padding>
             </ScrollPane>
-            <HBox>
+            <HBox spacing="10">
                 <Button onAction="#removeSelectedItems" alignment="CENTER" text="Удалить товары"/>
                 <Button onAction="#sellItems" alignment="CENTER" text="Оплата"/>
             </HBox>

@@ -9,7 +9,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +29,7 @@ public class CashierController {
     private final ObservableList<Item> items = FXCollections.observableArrayList();
     private final ObservableList<CartItem> cart = FXCollections.observableArrayList();
     private int UserId;
+    private String fullName;
 
     ConnectionHelper helper = ConnectionHelper.getInstance();
 
@@ -247,14 +253,14 @@ public class CashierController {
                 for (CartItem cartItem : cart) {
                     Item item = cartItem.getItem();
 
-                    // Вставка в receipt_items
+                    // receipt_items
                     insertStmt.setInt(1, receiptId);
                     insertStmt.setInt(2, item.getItemID());
                     insertStmt.setDouble(3, cartItem.getQuantity());
                     insertStmt.setDouble(4, item.getItemPrice());
                     insertStmt.addBatch();
 
-                    // Обновление stock
+                    // stock
                     updateStmt.setDouble(1, cartItem.getQuantity());
                     updateStmt.setInt(2, item.getItemID());
                     updateStmt.addBatch();
@@ -265,16 +271,17 @@ public class CashierController {
             }
 
             connection.commit(); // Завершение транзакции
-            showAlert(Alert.AlertType.INFORMATION, "Успех", "Продажа завершена успешно!");
+
+            showReceiptExportDialog();
             cart.clear();
             shopingCart.getChildren().clear();
             updateTotalPrice();
-            loadItemsFromDB(); // Обновление UI
+            loadItemsFromDB();
         } catch (SQLException e) {
             log.log(Level.SEVERE, "Database transaction error during sellItems", e);
             if (connection != null) {
                 try {
-                    connection.rollback(); // Откат в случае ошибки
+                    connection.rollback();
                     log.info("Transaction rolled back.");
                 } catch (SQLException rbEx) {
                     log.log(Level.SEVERE, "Error during transaction rollback", rbEx);
@@ -293,6 +300,58 @@ public class CashierController {
         }
 
     }
+
+
+    private void showReceiptExportDialog(){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Сохранить чек");
+        fileChooser.setInitialFileName("чек_продажи.txt");
+
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Текстовые файлы (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        File file = fileChooser.showSaveDialog(totalPriceLabel.getScene().getWindow());
+
+        if (file != null) {
+            writeReceiptToFile(file);
+        }
+    }
+
+    private void writeReceiptToFile(File file) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            writer.println("");
+            writer.println("          Квитанция об оплате        ");
+            writer.println("");
+            writer.printf("Дата и время: %tD %tT%n", new java.util.Date(), new java.util.Date());
+            writer.printf("Продавец: %s%n",fullName);
+            writer.println("");
+            writer.println("Товар              | Количество | Цена");
+            writer.println("");
+
+            double total = 0;
+            for (CartItem item : cart) {
+                writer.printf("%-18s | %-10s | %-6.2f%n",
+                        item.getItem().getItemName(),
+                        item.getQuantity(),
+                        item.getItem().getItemPrice() * item.getQuantity()
+                );
+                total += item.getItem().getItemPrice() * item.getQuantity();
+            }
+
+            writer.println("");
+            writer.printf("Итого: %.2f ₽%n", total);
+            writer.println("");
+
+            showAlert(Alert.AlertType.INFORMATION, "Экспорт чека", "Чек успешно сохранен в: " + file.getAbsolutePath());
+
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Ошибка при записи чека в файл", e);
+            showAlert(Alert.AlertType.ERROR, "Ошибка экспорта", "Не удалось сохранить чек: " + e.getMessage());
+        }
+    }
+
+
+
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
@@ -301,8 +360,9 @@ public class CashierController {
         alert.showAndWait();
     }
 
-    public void setUserId(int userId){
-        this.UserId =  userId;
+    public void setUserId(int userId, String fullName){
+        this.UserId = userId;
+        this.fullName = fullName;
     }
 
 }

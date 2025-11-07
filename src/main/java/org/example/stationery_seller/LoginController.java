@@ -4,7 +4,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -29,7 +28,7 @@ public class LoginController {
 
         String username = usernameField.getText();
         String password = passwordField.getText(); // TODO: заменить на hash
-        ConnectionHelper.init("jdbc:postgresql://192.168.0.12:5432/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
+        ConnectionHelper.init("jdbc:postgresql://localhost:5432/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
         ConnectionHelper helper = ConnectionHelper.getInstance();
 
 
@@ -38,7 +37,7 @@ public class LoginController {
         try {
             Connection conn = helper.getConnection();
             PreparedStatement statement = conn.prepareStatement(
-                    "SELECT UserID, RoleID FROM Users WHERE login = ? AND password_hash = ?"
+                    "SELECT UserID, RoleID, First_Name, Last_Name FROM Users WHERE login = ? AND password_hash = ?"
             );
             statement.setString(1, username);
             statement.setString(2, password); // TODO: заменить на hash
@@ -47,13 +46,21 @@ public class LoginController {
             if (result.next()) {
                 int roleId = result.getInt("RoleID");
                 int userId = result.getInt("UserID");
+                String fullName = result.getString("First_Name") + " " + result.getString("Last_Name");
 
                 try{
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("CashierView.fxml"));
+                    FXMLLoader loader;
+                    switch (roleId){
+                        case 3: loader = new FXMLLoader(getClass().getResource("CashierView.fxml")); break;       //cashier
+                        case 2: loader = new FXMLLoader(getClass().getResource("ManagerView.fxml")); break;  //stockManager
+                        //case 1: loader = new FXMLLoader(getClass().getResource("DirectorView.fxml")); break;      //director
+
+                        default: errorLabel.setText("Ошибка: Роль пользователя не найдена"); return;
+                    }
                     Parent mainView = loader.load();
 
                     CashierController controller = loader.getController();
-                    controller.setUserId(userId);
+                    controller.setUserId(userId, fullName);
 
                     Scene scene = new Scene(mainView,1024,768);
                     Stage stage = (Stage) usernameField.getScene().getWindow();
@@ -73,15 +80,7 @@ public class LoginController {
 
         }
         catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Ошибка подключения", e.getMessage());
+            errorLabel.setText("Ошибка подключения к базе данных");
         }
         }
-
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }
