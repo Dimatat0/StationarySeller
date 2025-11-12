@@ -9,14 +9,10 @@
 <top>
 <MenuBar nodeOrientation="LEFT_TO_RIGHT">
     <Menu mnemonicParsing="false" text="Файл">
-        <MenuItem mnemonicParsing="false" text="Закрыть" />
-    </Menu>
-    <Menu mnemonicParsing="false" text="Редактировать">
-        <MenuItem mnemonicParsing="false" text="Удалить" />
-        <MenuItem mnemonicParsing="false" text="Редактировать" />
+        <MenuItem mnemonicParsing="false" text="Закрыть" onAction="#onExit"/>
     </Menu>
     <Menu mnemonicParsing="false" text="Помощь">
-        <MenuItem mnemonicParsing="false" text="О нас" />
+        <MenuItem mnemonicParsing="false" text="О нас" onAction="#onAbout"/>
     </Menu>
 </MenuBar>
 </top>

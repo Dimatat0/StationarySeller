@@ -6,19 +6,15 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.stationery_seller.LoginController">
 
     <top>
-    <MenuBar nodeOrientation="LEFT_TO_RIGHT">
-       <Menu mnemonicParsing="false" text="File">
-           <MenuItem mnemonicParsing="false" text="Close" />
-       </Menu>
-       <Menu mnemonicParsing="false" text="Edit">
-           <MenuItem mnemonicParsing="false" text="Delete" />
-           <MenuItem mnemonicParsing="false" text="Edit" />
-       </Menu>
-       <Menu mnemonicParsing="false" text="Help">
-           <MenuItem mnemonicParsing="false" text="About" />
-       </Menu>
-   </MenuBar>
-   </top>
+        <MenuBar nodeOrientation="LEFT_TO_RIGHT">
+            <Menu mnemonicParsing="false" text="Файл">
+                <MenuItem mnemonicParsing="false" text="Закрыть" onAction="#onExit"/>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Помощь">
+                <MenuItem mnemonicParsing="false" text="О нас" onAction="#onAbout"/>
+            </Menu>
+        </MenuBar>
+    </top>
 
     <center>
         <VBox alignment="CENTER" maxWidth="200" spacing="10">

@@ -1,9 +1,11 @@
 package org.example.stationery_seller;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -22,6 +24,14 @@ public class LoginController {
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
     private int UserID;
+
+    @FXML void onExit(){
+        Platform.exit();
+    }
+    @FXML
+    private void onAbout() {
+        showAlert(Alert.AlertType.INFORMATION, "О программе", "Приложение для продажи канцелярских товаров.");
+    }
 
     @FXML
     private void onLogin() {
@@ -83,4 +93,12 @@ public class LoginController {
             errorLabel.setText("Ошибка подключения к базе данных");
         }
         }
+
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

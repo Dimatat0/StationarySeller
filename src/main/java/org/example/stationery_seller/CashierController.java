@@ -1,5 +1,6 @@
 package org.example.stationery_seller;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -32,6 +33,15 @@ public class CashierController {
     private String fullName;
 
     ConnectionHelper helper = ConnectionHelper.getInstance();
+
+
+    @FXML void onExit(){
+        Platform.exit();
+    }
+    @FXML
+    private void onAbout() {
+        showAlert(Alert.AlertType.INFORMATION, "О программе", "Приложение для продажи канцелярских товаров.");
+    }
 
     //управление корзиной
     @FXML private void addItemInShopingCart(Item item, int quantity){
@@ -135,6 +145,16 @@ public class CashierController {
             log.log(Level.SEVERE, "Database connection error");
             showAlert(Alert.AlertType.ERROR, "Ошибка", "Не удалось загрузить товары из базы данных");
         }
+
+        for (CartItem cartItem : cart) {
+            for (Item item : items) {
+                if (item.getItemID() == cartItem.getItem().getItemID()) {
+                    item.setItemQuantity(item.getItemQuantity() - cartItem.getQuantity());
+                    break;
+                }
+            }
+        }
+
         updateItemsUI();
     }
 
@@ -277,6 +297,7 @@ public class CashierController {
             shopingCart.getChildren().clear();
             updateTotalPrice();
             loadItemsFromDB();
+
         } catch (SQLException e) {
             log.log(Level.SEVERE, "Database transaction error during sellItems", e);
             if (connection != null) {
@@ -287,7 +308,19 @@ public class CashierController {
                     log.log(Level.SEVERE, "Error during transaction rollback", rbEx);
                 }
             }
+            if (e.getMessage().contains("Недостаточно товара")) {
+                showAlert(Alert.AlertType.ERROR, "Ошибка", "Недостаточно товара на складе для продажи!");
+            }
+            else{
             showAlert(Alert.AlertType.ERROR, "Ошибка","Произошла ошибка при продаже товаров: " + e.getMessage());
+            System.out.println(e.getMessage());
+            }
+
+            cart.clear();
+            shopingCart.getChildren().clear();
+            updateTotalPrice();
+            loadItemsFromDB();
+
         } finally {
             if (connection != null) {
                 try {
