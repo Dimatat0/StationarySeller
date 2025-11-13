@@ -4,13 +4,16 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,6 +37,21 @@ public class CashierController {
 
     ConnectionHelper helper = ConnectionHelper.getInstance();
 
+    @FXML
+    void onAccountExit() {
+        try {
+            Stage stage = (Stage) totalPriceLabel.getScene().getWindow();
+
+            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("Login.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 1024, 768);
+
+            stage.setTitle("Канцелярские товары");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Can't change scene", e);
+        }
+    }
 
     @FXML void onExit(){
         Platform.exit();
@@ -293,6 +311,7 @@ public class CashierController {
             connection.commit(); // Завершение транзакции
 
             showReceiptExportDialog();
+            showAlert(Alert.AlertType.INFORMATION, "Продажа", "Продажа успешно осуществлена");
             cart.clear();
             shopingCart.getChildren().clear();
             updateTotalPrice();

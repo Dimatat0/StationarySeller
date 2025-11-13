@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 public class LoginController {
     private static final Logger log = Logger.getLogger(LoginController.class.getName());
+    @FXML private TextField DBIpField;
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
@@ -36,9 +37,10 @@ public class LoginController {
     @FXML
     private void onLogin() {
 
+        String DBIp = DBIpField.getText();
         String username = usernameField.getText();
         String password = passwordField.getText(); // TODO: заменить на hash
-        ConnectionHelper.init("jdbc:postgresql://localhost:5432/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
+        ConnectionHelper.init("jdbc:postgresql://" + DBIp + "/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
         ConnectionHelper helper = ConnectionHelper.getInstance();
 
 

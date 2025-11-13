@@ -19,6 +19,7 @@
     <center>
         <VBox alignment="CENTER" maxWidth="200" spacing="10">
             <Label text="Вход в систему" textAlignment="CENTER" />
+            <TextField fx:id="DBIpField" promptText="Ip Базы данных" text="172.19.0.1:5432"/>
             <TextField fx:id="usernameField" promptText="Логин" text="Harry13"/>
             <PasswordField fx:id="passwordField" promptText="Пароль" text="1234"/>
             <Button onAction="#onLogin" text="Войти" />
