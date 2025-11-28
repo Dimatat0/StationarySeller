@@ -24,19 +24,24 @@
             <TableColumn fx:id="colName" text="Название" reorderable="false"/>
             <TableColumn fx:id="colPrice" text="Цена" maxWidth="400" resizable="false" reorderable="false"/>
             <TableColumn fx:id="colQuantity" text="Количество" maxWidth="1000" resizable="false" reorderable="false"/>
+            <TableColumn fx:id="colCategory" text="Категория" maxWidth="1000" resizable="false" reorderable="false"/>
+            <TableColumn fx:id="colBarcode" text="Штрихкод" minWidth="100" resizable="false" reorderable="false"/>
         </columns>
     </TableView>
     </center>
 
     <bottom>
-        <HBox spacing="100">
+        <HBox spacing="50">
             <padding>
                 <Insets top="20"/>
             </padding>
             <Button onAction="#editItem" text="Редактировать товар" />
             <Button onAction="#refresh" text="Обновить"/>
             <Button onAction="#addItem" text="Добавить товар"/>
-            <Button onAction="#deleteItem" text="Удалить"/>
+            <Button onAction="#deleteItem" text="Удалить товар"/>
+            <Button onAction="#addCategory" text="Добавить категорию"/>
+            <Button onAction="#deleteCategory" text="Удалить категорию"/>
+
         </HBox>
     </bottom>
 

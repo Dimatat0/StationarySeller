@@ -3,7 +3,6 @@ package org.example.stationery_seller;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -28,8 +27,11 @@ public class ManagerController {
     public @FXML TableColumn<Item, String> colName;
     public @FXML TableColumn<Item, Double> colPrice;
     public @FXML TableColumn<Item, Integer> colQuantity;
+    public @FXML TableColumn<Item, String> colCategory;
+    public @FXML TableColumn<Item, String> colBarcode;
 
     private final ObservableList<Item> items = FXCollections.observableArrayList();
+    private final ObservableList<Category> categories = FXCollections.observableArrayList();
 
     private int UserId;
     private String fullName;
@@ -41,6 +43,7 @@ public class ManagerController {
         this.UserId = userId;
         this.fullName = fullName;
         loadItemsFromDB();
+        loadCategoriesFromDB();
     }
 
     @FXML
@@ -76,7 +79,11 @@ public class ManagerController {
         items.clear();
         try (Connection conn = helper.getConnection();
              PreparedStatement statement = conn.prepareStatement(
-                     "SELECT i.ItemID, i.Name, i.Price, s.quantity FROM Items i JOIN stock s ON i.ItemID = s.itemID ORDER BY i.ItemID"
+                     "SELECT i.ItemID, i.Name, i.Price, s.quantity, i.barcode, i.CategoryID ,c.name as CategoryName " +
+                             "FROM Items i " +
+                             "JOIN stock s ON i.ItemID = s.itemID " +
+                             "JOIN item_category c ON i.CategoryID = c.CategoryID " +
+                             "ORDER BY i.ItemID"
              );
              ResultSet result = statement.executeQuery()
         ) {
@@ -85,17 +92,42 @@ public class ManagerController {
                         result.getInt("ItemID"),
                         result.getString("Name"),
                         result.getDouble("Price"),
-                        result.getInt("Quantity")
+                        result.getInt("Quantity"),
+                        result.getString("Barcode"),
+                        result.getInt("CategoryID"),
+                        result.getString("CategoryName")
                 );
                 items.add(item);
             }
 
         } catch (SQLException e) {
-            log.log(Level.SEVERE, "Database connection error");
+            log.log(Level.SEVERE, "Database connection error", e);
             showAlert(Alert.AlertType.ERROR, "Ошибка", "Не удалось загрузить товары из базы данных");
         }
 
         updateItemsUI();
+    }
+
+    private void loadCategoriesFromDB() {
+        categories.clear();
+        try (Connection conn = helper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT CategoryID, Name FROM item_category ORDER BY Name"
+             );
+             ResultSet rs = ps.executeQuery()
+        ) {
+            while (rs.next()) {
+                categories.add(new Category(
+                        rs.getInt("CategoryID"),
+                        rs.getString("Name")
+                ));
+            }
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, "Failed to load categories", e);
+            showAlert(Alert.AlertType.ERROR,
+                    "Ошибка",
+                    "Не удалось загрузить категории из базы данных");
+        }
     }
 
     @FXML
@@ -112,6 +144,8 @@ public class ManagerController {
         colName.setCellValueFactory(new PropertyValueFactory<>("itemName"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("itemPrice"));
         colQuantity.setCellValueFactory(new PropertyValueFactory<>("itemQuantity"));
+        colCategory.setCellValueFactory(new PropertyValueFactory<>("CategoryName"));
+        colBarcode.setCellValueFactory(new PropertyValueFactory<>("Barcode"));
 
         itemsTable.setItems(items);
     }
@@ -178,8 +212,9 @@ public class ManagerController {
     private Item insertItemToDB(String name,
                                 double price,
                                 int quantity,
-                                int categoryId,
-                                String barcode) {
+                                int categoryID,
+                                String barcode,
+                                String categoryName) {
 
         try (Connection conn = helper.getConnection()) {
 
@@ -193,7 +228,7 @@ public class ManagerController {
             try (PreparedStatement ps = conn.prepareStatement(insertItemSql)) {
                 ps.setString(1, name);
                 ps.setDouble(2, price);
-                ps.setInt(3, categoryId);
+                ps.setInt(3, categoryID);
                 ps.setString(4, barcode);
 
                 try (ResultSet rs = ps.executeQuery()) {
@@ -216,7 +251,7 @@ public class ManagerController {
             conn.commit();
             //конец транзакции
 
-            return new Item(newItemId, name, price, quantity);
+            return new Item(newItemId, name, price, quantity, barcode, categoryID, categoryName);
 
         } catch (SQLException e) {
             log.log(Level.SEVERE, "Failed to insert new item", e);
@@ -281,13 +316,13 @@ public class ManagerController {
         TextField nameField = new TextField();
         TextField priceField = new TextField();
         TextField qtyField = new TextField();
-        TextField categoryField = new TextField();
+        ComboBox<Category> categoryCombo = new ComboBox<>(categories);
         TextField barcodeField = new TextField();
 
         nameField.setPromptText("Название");
-        priceField.setPromptText("Цена, например 99.90");
-        qtyField.setPromptText("Количество, например 10");
-        categoryField.setPromptText("ID категории");
+        priceField.setPromptText("Цена");
+        qtyField.setPromptText("Количество");
+        categoryCombo.setPromptText("Выберите категорию");
         barcodeField.setPromptText("Штрих-код");
 
         GridPane grid = new GridPane();
@@ -304,8 +339,8 @@ public class ManagerController {
         grid.add(new Label("Количество:"), 0, 2);
         grid.add(qtyField, 1, 2);
 
-        grid.add(new Label("ID категории:"), 0, 3);
-        grid.add(categoryField, 1, 3);
+        grid.add(new Label("Категория:"), 0, 3);
+        grid.add(categoryCombo, 1, 3);
 
         grid.add(new Label("Штрих-код:"), 0, 4);
         grid.add(barcodeField, 1, 4);
@@ -327,10 +362,20 @@ public class ManagerController {
                     String name = nameField.getText().trim();
                     double price = Double.parseDouble(priceField.getText().trim());
                     int qty = Integer.parseInt(qtyField.getText().trim());
-                    int categoryId = Integer.parseInt(categoryField.getText().trim());
+                    Category selectedCategory = categoryCombo.getValue();
                     String barcode = barcodeField.getText().trim();
 
-                    return insertItemToDB(name, price, qty, categoryId, barcode);
+                    if (selectedCategory == null) {
+                        showAlert(Alert.AlertType.ERROR,
+                                "Ошибка ввода",
+                                "Пожалуйста, выберите категорию.");
+                        return null;
+                    }
+
+                    int categoryId = selectedCategory.getId();
+                    String categoryName = selectedCategory.getName();
+
+                    return insertItemToDB(name, price, qty, categoryId, barcode, categoryName);
                 } catch (NumberFormatException e) {
                     showAlert(Alert.AlertType.ERROR,
                             "Ошибка ввода",
@@ -343,8 +388,6 @@ public class ManagerController {
 
         dialog.showAndWait().ifPresent(newItem -> {
             if (newItem != null) {
-
-                items.add(newItem);
                 refresh();
             }
         });
@@ -364,12 +407,124 @@ public class ManagerController {
             if (buttonType == ButtonType.OK) {
                 deleteItemFromDB(selected);
                 refresh();
-    }
+            }
         });
     }
 
-    //TODO: Сделать кнопки добавления и удаления категорий
-    //TODO: Сделать отображение имени категории в таблице
-    //TODO: Сделать так, чтобы при добавлении товара, вкладка с категориями выпадала и можно выбрать
-    //И с проектом всё :)
+
+
+
+
+
+
+
+
+    @FXML
+    private void addCategory() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Добавление категории");
+        dialog.setHeaderText("Создание новой категории");
+        dialog.setContentText("Название категории:");
+
+        var result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return;
+        }
+
+        String name = result.get().trim();
+        if (name.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR,
+                    "Ошибка ввода",
+                    "Название категории не может быть пустым.");
+            return;
+        }
+
+        try (Connection conn = helper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "INSERT INTO item_category (Name) VALUES (?) RETURNING CategoryID"
+             )) {
+
+            ps.setString(1, name);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("CategoryID");
+                    Category newCategory = new Category(id, name);
+                    categories.add(newCategory); // обновляем локальный список
+                    showAlert(Alert.AlertType.INFORMATION,
+                            "Категория добавлена",
+                            "Категория \"" + name + "\" успешно добавлена.");
+                    log.log(Level.INFO, name + "добавлена");
+                } else {
+                    throw new SQLException("Не удалось получить CategoryID при вставке категории");
+                }
+            }
+
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, "Failed to add category", e);
+            showAlert(Alert.AlertType.ERROR,
+                    "Ошибка базы данных",
+                    "Не удалось добавить категорию в базу данных.");
+        }
+    }
+
+    @FXML
+    private void deleteCategory() {
+        if (categories.isEmpty()) {
+            showAlert(Alert.AlertType.INFORMATION,
+                    "Нет категорий",
+                    "В базе данных пока нет ни одной категории.");
+            return;
+        }
+
+        ChoiceDialog<Category> dialog = new ChoiceDialog<>(categories.get(0), categories);
+        dialog.setTitle("Удаление категории");
+        dialog.setHeaderText("Выберите категорию для удаления");
+        dialog.setContentText("Категория:");
+
+        dialog.showAndWait().ifPresent(category -> {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Подтверждение удаления");
+            confirm.setHeaderText("Удалить категорию \"" + category.getName() + "\"?");
+            confirm.setContentText("Если к этой категории привязаны товары, удалить её не получится.");
+
+            confirm.showAndWait().ifPresent(buttonType -> {
+                if (buttonType != ButtonType.OK) {
+                    return;
+                }
+
+                try (Connection conn = helper.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(
+                             "DELETE FROM item_category WHERE CategoryID = ?"
+                     )) {
+
+                    ps.setInt(1, category.getId());
+                    ps.executeUpdate();
+
+                    categories.remove(category);
+                    refresh();
+
+                    showAlert(Alert.AlertType.INFORMATION,
+                            "Категория удалена",
+                            "Категория \"" + category.getName() + "\" успешно удалена.");
+
+                } catch (SQLException e) {
+
+                    if ("23503".equals(e.getSQLState())) {
+                        showAlert(Alert.AlertType.WARNING,
+                                "Удаление невозможно",
+                                "Нельзя удалить категорию, так как к ней привязаны товары.");
+                        log.log(Level.INFO,
+                                "Failed to delete category, it is referenced by Items");
+                    } else {
+                        log.log(Level.SEVERE, "Failed to delete category", e);
+                        showAlert(Alert.AlertType.ERROR,
+                                "Ошибка базы данных",
+                                "Не удалось удалить категорию.");
+                    }
+                }
+            });
+        });
+    }
+    //И с проектом всё  :)
 }

@@ -145,7 +145,10 @@ public class CashierController {
         items.clear();
         try (Connection conn = helper.getConnection();
              PreparedStatement statement = conn.prepareStatement(
-                     "SELECT i.ItemID, i.Name, i.Price, s.quantity FROM Items i JOIN stock s ON i.ItemID = s.itemID WHERE s.quantity > 0 ORDER BY i.Name"
+                     "SELECT i.ItemID, i.Name, i.Price, s.quantity, i.barcode, i.CategoryID " +
+                             "FROM Items i JOIN stock s " +
+                             "ON i.ItemID = s.itemID " +
+                             "WHERE s.quantity > 0 ORDER BY i.Name"
              );
              ResultSet result = statement.executeQuery()
         ) {
@@ -154,13 +157,16 @@ public class CashierController {
                         result.getInt("ItemID"),
                         result.getString("Name"),
                         result.getDouble("Price"),
-                        result.getInt("Quantity")
+                        result.getInt("Quantity"),
+                        result.getString("Barcode"),
+                        result.getInt("CategoryID"),
+                        null
                 );
                 items.add(item);
             }
 
         } catch (SQLException e) {
-            log.log(Level.SEVERE, "Database connection error");
+            log.log(Level.SEVERE, "Database connection error", e);
             showAlert(Alert.AlertType.ERROR, "Ошибка", "Не удалось загрузить товары из базы данных");
         }
 
