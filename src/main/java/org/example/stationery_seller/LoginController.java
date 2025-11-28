@@ -31,7 +31,7 @@ public class LoginController {
     }
     @FXML
     private void onAbout() {
-        showAlert(Alert.AlertType.INFORMATION, "О программе", "Приложение для продажи канцелярских товаров.");
+        showAlert(Alert.AlertType.INFORMATION, "О программе",  "Приложение для продажи канцелярских товаров.\n Автор: Татарских Д.Н.");
     }
 
     @FXML
@@ -40,7 +40,7 @@ public class LoginController {
         String DBIp = DBIpField.getText();
         String username = usernameField.getText();
         String password = passwordField.getText(); // TODO: заменить на hash
-        ConnectionHelper.init("jdbc:postgresql://" + DBIp + "/shop", "postgres","51500990"); //TODO: сделать поле для подключения на этапе регистрации
+        ConnectionHelper.init("jdbc:postgresql://" + DBIp + "/shop", "postgres","51500990");
         ConnectionHelper helper = ConnectionHelper.getInstance();
 
 
@@ -62,17 +62,26 @@ public class LoginController {
 
                 try{
                     FXMLLoader loader;
+                    Parent mainView;
                     switch (roleId){
-                        case 3: loader = new FXMLLoader(getClass().getResource("CashierView.fxml")); break;       //cashier
-                        case 2: loader = new FXMLLoader(getClass().getResource("ManagerView.fxml")); break;  //stockManager
-                        //case 1: loader = new FXMLLoader(getClass().getResource("DirectorView.fxml")); break;      //director
+                        //cashier
+                        case 3:
+                            loader = new FXMLLoader(getClass().getResource("CashierView.fxml"));
+                            mainView = loader.load();
+                            CashierController cashierController = loader.getController();
+                            cashierController.setUserId(userId, fullName);
+                            break;
+
+                        //stockManager
+                        case 2: loader = new FXMLLoader(getClass().getResource("ManagerView.fxml"));
+                            mainView = loader.load();
+                            ManagerController managerController = loader.getController();
+                            managerController.setUserId(userId, fullName);
+                            break;
 
                         default: errorLabel.setText("Ошибка: Роль пользователя не найдена"); return;
                     }
-                    Parent mainView = loader.load();
 
-                    CashierController controller = loader.getController();
-                    controller.setUserId(userId, fullName);
 
                     Scene scene = new Scene(mainView,1024,768);
                     Stage stage = (Stage) usernameField.getScene().getWindow();

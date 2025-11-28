@@ -13,7 +13,7 @@
         <MenuItem mnemonicParsing="false" text="Закрыть" onAction="#onExit"/>
     </Menu>
     <Menu mnemonicParsing="false" text="Помощь">
-        <MenuItem mnemonicParsing="false" text="О нас" onAction="#onAbout"/>
+        <MenuItem mnemonicParsing="false" text="О приложении" onAction="#onAbout"/>
     </Menu>
 </MenuBar>
 </top>

@@ -58,7 +58,7 @@ public class CashierController {
     }
     @FXML
     private void onAbout() {
-        showAlert(Alert.AlertType.INFORMATION, "О программе", "Приложение для продажи канцелярских товаров.");
+        showAlert(Alert.AlertType.INFORMATION, "О программе", "Приложение для продажи канцелярских товаров.\n Автор: Татарских Д.Н.");
     }
 
     //управление корзиной
@@ -329,10 +329,11 @@ public class CashierController {
             }
             if (e.getMessage().contains("Недостаточно товара")) {
                 showAlert(Alert.AlertType.ERROR, "Ошибка", "Недостаточно товара на складе для продажи!");
+                log.log(Level.SEVERE, e.getMessage());
             }
             else{
             showAlert(Alert.AlertType.ERROR, "Ошибка","Произошла ошибка при продаже товаров: " + e.getMessage());
-            System.out.println(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage());
             }
 
             cart.clear();
@@ -415,6 +416,7 @@ public class CashierController {
     public void setUserId(int userId, String fullName){
         this.UserId = userId;
         this.fullName = fullName;
+        loadItemsFromDB();
     }
 
 }
